@@ -1,0 +1,311 @@
+Apache Spark + PySpark Setup on macOS
+----------------------------------------
+
+1. Install JDK 17
+brew install openjdk@17
+
+Verify:
+
+java -version
+javac -version
+
+
+2. Install Python 3.12.7
+brew install python
+
+Verify:
+
+python3 --version
+pip3 --version
+
+
+3. Install Apache Spark
+brew install apache-spark
+
+Verify:
+
+spark-submit --version
+
+
+4. Configure Environment Variables
+
+Add the following to ~/.zshrc:
+
+export JAVA_HOME=$(/usr/libexec/java_home -v 17)
+export SPARK_HOME=$(brew --prefix apache-spark)/libexec
+export PATH=$PATH:$SPARK_HOME/bin
+export PYSPARK_PYTHON=$(which python3)
+export PYTHONPATH=$SPARK_HOME/python:$PYTHONPATH
+
+Reload configuration:
+
+source ~/.zshrc
+
+
+5. Install Jupyter Notebook / Jupyter Lab
+pip3 install notebook jupyterlab
+
+Verify:
+
+jupyter --version
+
+
+6. Configure PySpark to Launch Jupyter Lab
+
+Add the following to ~/.zshrc:
+
+export PYSPARK_DRIVER_PYTHON=jupyter
+export PYSPARK_DRIVER_PYTHON_OPTS="lab"
+
+Reload configuration:
+
+source ~/.zshrc
+
+
+8. Launch PySpark
+pyspark
+
+This will automatically:
+
+Start Spark
+Start Jupyter Lab
+Open the browser
+Create Spark Session
+
+**************************************************************************************************
+Pyspark - for Linux
+
+1. Install JDK 17
+sudo apt update
+sudo apt install openjdk-17-jdk -y
+
+Verify:
+
+java -version
+javac -version
+
+2. Install Python 3.12.x
+sudo apt update
+sudo apt install python3 python3-pip -y
+
+Verify:
+
+python3 --version
+pip3 --version
+
+3. Install Apache Spark
+Download Spark:
+wget https://downloads.apache.org/spark/spark-4.0.1/spark-4.0.1-bin-hadoop3.tgz
+
+Extract:
+tar -xzf spark-4.0.1-bin-hadoop3.tgz
+
+Move to /opt:
+sudo mv spark-4.0.1-bin-hadoop3 /opt/spark
+
+Verify:
+/opt/spark/bin/spark-submit --version
+
+4. Configure Environment Variables
+
+Add the following to ~/.bashrc:
+
+export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+export SPARK_HOME=/opt/spark
+export PATH=$PATH:$SPARK_HOME/bin
+export PYSPARK_PYTHON=$(which python3)
+export PYTHONPATH=$SPARK_HOME/python:$PYTHONPATH
+
+Reload configuration:
+
+source ~/.bashrc
+
+5. Install Jupyter Notebook / Jupyter Lab
+pip3 install notebook jupyterlab
+
+Verify:
+
+jupyter --version
+
+6. Configure PySpark to Launch Jupyter Lab
+Add the following to ~/.bashrc:
+export PYSPARK_DRIVER_PYTHON=jupyter
+export PYSPARK_DRIVER_PYTHON_OPTS="lab"
+
+Reload configuration:
+
+source ~/.bashrc
+
+8. Launch PySpark
+pyspark
+
+This will automatically:
+
+Start Spark
+Start Jupyter Lab
+Open the browser
+Create Spark Session
+
+================================================================================================================
+ETL / ELT
+
+	1. Extract
+
+		Reading data from source systems.
+
+		How?
+			Ingestion tools / Spark source connectors
+
+
+	2. Load
+	Store extracted data into a centralized storage system.
+
+	Ex:
+		Amazon S3
+		Azure Data Lake storage
+		Google cloud storage
+		HDFS
+
+
+	3. Transform
+
+	Converting raw data into business ready data.
+	1. read from data lake
+		Spark dataframe/spark sql
+
+	2. transform (drop duplicates or anything) dataframe/sql
+	3. save to data lake
+		dataframe/sql
+
+What SparkSession?
+	SparkSession is a entry point for programming spark using the DataFrame and SQL APIs.
+
+	Every spark application starts with a SparkSession.
+
+
+Why SparkSession?
+	Before Spark 2.0 we had:
+		- SparkContext
+		- SQLContext
+		- HiveContext
+
+What SparkSession can do?
+	1. Connect to cluster as Driver
+
+		spark = SparkSession.builder.getOrCreate()
+
+	2. Create DataFrames
+
+	3. Read data files
+
+	4. Read Tables
+
+	5. Execute SQL
+
+	6. Access runtime configurations
+
+	spark.conf
+
+	7. Access SparkContext
+		spark.sparkContext
+
+
+How to create SparkSession?
+	Method 1: Spark Session Builder
+
+		spark = SparkSessiion.builder.
+				appName("Training")
+				.master("local[*]")
+				.getOrCreate()
+
+
+
+
+	Method 2: Spark Connect Session Builder (clinet side)
+
+		Spark 3.4 onwards
+
+		spark = SparkSession.builder.remote("sc://localhost").getOrCreate();
+
+
+	Method 3: Pre-Created Spark Session
+	Platform dependent
+
+	spark
+
+
+DataFrame
+
+	A DataFrame is a Two-dimensional labeled data structure organized into rows and columns.
+
+	Similar to :
+		- Excel sheet
+		- SQL Table
+		- Pandas Dataframe
+
+Why DataFrame?
+	- Easy to use
+	- Optimized (catalyst optimizer )
+	- Scalable 
+	- Distributed
+
+	- Rich APIs
+		select
+		filter
+		Join (emp.join(dept, dept_id))
+		aggregate (summarize data)
+		sort
+		union
+		distinct
+
+	- Save
+
+Advantages?
+	1. Parallel Processingh
+
+	2. In-Memory Computation
+
+	3. Schema Flexibility
+		CSV
+		JSON
+		Parquet
+		Delta
+		Databases
+
+	4. Fault Tolerance
+
+DataFrame core concept:
+
+	1. Spark Creates Optized query plans
+
+		df.filter(df.salary > 50000)
+
+		Spark internally creates an optimized execution plan.
+
+		catalyst optimizer
+
+	2. Data Frames are immutable
+
+			df.filter(df.salary > 50000)
+
+		doesn't change existing df
+
+		will create new df object 
+
+	3. DataFrame APIs are composable
+
+		df.filter(..).select('').orderBy("")
+
+		this makes code very clean and readable
+
+
+
+How to create dataframe?
+
+
+
+
+
+
+
+

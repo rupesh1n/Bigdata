@@ -1,0 +1,480 @@
+ssh -L 3000:localhost:3000 -L 5000:localhost:5000 -L 8080:localhost:8080 -L 9870:localhost:9870 -L 8088:localhost:8088 -L 8082:localhost:8082 trainee26@10.1.2.183
+
+Password:- Train@User262026
+ this is the command you need to use
+
+Step 1: Check NameNode (Web UI)
+
+ 
+
+curl -s -o /dev/null -w "Hadoop HDFS: %{http_code}\n" http://localhost:9870
+
+ 
+
+Step 2: Check DataNodes
+
+ 
+
+docker exec -it namenode hdfs dfsadmin -report
+
+Verify:
+
+Live datanodes > 0
+ 
+
+Step 3: Basic HDFS Commands
+
+ 
+
+ 
+
+# List root
+
+docker exec -it namenode hdfs dfs -ls /
+
+ 
+
+# Create user directory
+
+docker exec -it namenode hdfs dfs -mkdir -p /user/trainee50
+
+ 
+
+# Disk usage
+
+docker exec -it namenode hdfs dfs -df -h /
+
+ 
+
+ 
+
+LEVEL 2 — File Upload & WordCount
+
+ 
+
+Step 4: Upload File
+
+ 
+
+# Create sample file
+
+echo "Hello Hadoop Hello BigData" > sample.txt
+
+ 
+
+# Copy to container
+
+docker cp sample.txt namenode:/tmp/sample50.txt
+
+ 
+
+# Upload to HDFS
+
+docker exec -it namenode hdfs dfs -put /tmp/sample50.txt /user/trainee50/
+
+ 
+
+# Verify
+
+docker exec -it namenode hdfs dfs -ls /user/trainee50/
+
+ 
+
+ 
+
+Step 5: Run WordCount - MapReduce
+
+# Input dir
+
+docker exec -it namenode hdfs dfs -ls  /user/trainee26
+
+ 
+
+# Input dir
+
+docker exec -it namenode hdfs dfs -mkdir -p /user/trainee50/input
+
+ 
+
+# Move file
+
+docker exec -it namenode hdfs dfs -put /tmp/sample.txt /user/trainee50/input/
+
+ 
+
+# Run job
+
+docker exec -it namenode hadoop jar /opt/hadoop-3.2.1/share/hadoop/mapreduce/hadoop-mapreduce-examples-3.2.1.jar wordcount /user/trainee26/input /user/trainee26/output
+
+ 
+
+View Output
+
+docker exec -it namenode hdfs dfs -cat /user/trainee26/output/part-r-00000
+
+ 
+
+You will find output in one or two files In the folder "output'
+
+If you sample.txt file BIG then you will see multiple files in output folder.
+
+ 
+
+Some Practice Commands
+
+ 
+
+docker exec -it namenode hdfs dfs -du -h /user/trainee26/
+
+docker exec -it namenode hdfs dfs -cp /user/trainee26/input /user/trainee26/backup
+
+docker exec -it namenode hdfs dfs -rm -r /user/trainee26/output
+
+ 
+
+ 
+
+LEVEL 3 — HDFS Log Processing (Streaming MapReduce)
+
+ 
+
+/*********************************************************
+
+Go inside your Hadoop container
+
+docker exec -it namenode bash
+
+ 
+
+ 
+
+Locate the examples JAR (this is the important one)
+
+ls /opt/hadoop-3.2.1/share/hadoop/mapreduce/
+
+ 
+
+ 
+
+See all built‑in MapReduce examples
+
+ 
+
+/opt/hadoop-3.2.1/bin/hadoop jar \
+
+/opt/hadoop-3.2.1/share/hadoop/mapreduce/hadoop-mapreduce-examples-3.2.1.jar
+
+ 
+
+You will see something like this
+
+-----------------------------------------------------------------------------------
+
+An example program must be given as the first argument.
+
+Valid program names are:
+
+ aggregatewordcount: An Aggregate based map/reduce program that counts the words in the input files.
+
+ aggregatewordhist: An Aggregate based map/reduce program that computes the histogram of the words in the input files.
+
+ bbp: A map/reduce program that uses Bailey-Borwein-Plouffe to compute exact digits of Pi.
+
+ dbcount: An example job that count the pageview counts from a database.
+
+ distbbp: A map/reduce program that uses a BBP-type formula to compute exact bits of Pi.
+
+ grep: A map/reduce program that counts the matches of a regex in the input.
+
+ join: A job that effects a join over sorted, equally partitioned datasets
+
+ multifilewc: A job that counts words from several files.
+
+ pentomino: A map/reduce tile laying program to find solutions to pentomino problems.
+
+ pi: A map/reduce program that estimates Pi using a quasi-Monte Carlo method.
+
+ randomtextwriter: A map/reduce program that writes 10GB of random textual data per node.
+
+ randomwriter: A map/reduce program that writes 10GB of random data per node.
+
+ secondarysort: An example defining a secondary sort to the reduce.
+
+ sort: A map/reduce program that sorts the data written by the random writer.
+
+ sudoku: A sudoku solver.
+
+ teragen: Generate data for the terasort
+
+ terasort: Run the terasort
+
+ teravalidate: Checking results of terasort
+
+ wordcount: A map/reduce program that counts the words in the input files.
+
+ wordmean: A map/reduce program that counts the average length of the words in the input files.
+
+ wordmedian: A map/reduce program that counts the median length of the words in the input files.
+
+ wordstandarddeviation: A map/reduce program that counts the standard deviation of the length of the words in the input files.
+
+ 
+
+---------------------------------------------------------
+
+ 
+
+# Remove previous output in case if it there [otherwise this will fail- In your environment it will not be there!! still]
+
+docker exec -it namenode hdfs dfs -rm -r /user/trainee50/output
+
+ 
+
+# Step 1: Prepare HDFS
+
+docker exec namenode hdfs dfs -mkdir -p /user/trainee50/logdemo/input
+
+docker exec namenode hdfs dfs -mkdir -p /user/trainee50/logdemo/output
+
+ 
+
+Step 2: Upload Log File [this file should be already there.  I have kept this  in "/tmp/hadoop_bigdata_demo.log"
+
+This is a big file ~60MB]
+
+ 
+
+docker cp /tmp/hadoop_bigdata_demo.log namenode:/tmp/
+docker exec namenode hdfs dfs -put /tmp/hadoop_bigdata_demo.log \
+/user/trainee26/logdemo/input/
+
+ 
+
+ 
+
+docker exec -it namenode mkdir -p /home/trainee26
+
+docker cp /tmp/mapper.py namenode:/home/trainee26/
+
+docker cp /tmp/reducer.py namenode:/home/trainee26/
+
+ 
+
+# Grant executable rights
+
+docker exec -it namenode chmod +x /home/trainee26/mapper.py /home/trainee26/reducer.py
+
+ 
+
+docker exec -it namenode bash -c '
+/opt/hadoop-3.2.1/bin/hdfs dfs -rm -r -f /user/trainee26/logdemo/output || true
+/opt/hadoop-3.2.1/bin/hadoop jar /opt/hadoop-3.2.1/share/hadoop/tools/lib/hadoop-streaming-3.2.1.jar \
+-files /home/trainee26/mapper.py,/home/trainee26/reducer.py \
+-input /user/trainee26/logdemo/input/ \
+-output /user/trainee26/logdemo/output/ \
+-mapper "python3 mapper.py" \
+-reducer "python3 reducer.py"
+'
+
+ 
+
+Explanation:
+
+hadoop jar ...hadoop-streaming-3.2.1.jar: This is the specialized Java library that acts as a "bridge." It allows Hadoop (which is Java-based) to talk to non-Java languages like Python.
+
+ 
+
+-input /user/trainee50/logdemo/input/  --> this folder contains BIG log file
+
+-output /user/trainee50/logdemo/output/  --> after exceuting map reduce you will find your output here'
+
+ 
+
+You python script is executed here [This is you logic to specify the job]
+
+-mapper "python3 mapper.py" \
+
+-reducer "python3 reducer.py"
+
+ 
+
+ 
+
+What happens behind the scenes?
+
+Splitting: Hadoop splits your log file into chunks.
+Mapping: Your mapper.py runs on each chunk, extracting the "event" name and attaching a 1.
+Shuffle & Sort: Hadoop automatically groups all identical "events" together (e.g., all "Login" events are sent to the same place).
+Reducing: Your reducer.py receives a list of events and sums up the 1s.
+Final Output: The result is saved back to HDFS in your output folder.
+ 
+
+Check Output
+
+ 
+
+docker exec namenode hdfs dfs -cat /user/trainee26/logdemo/output/part-00000
+
+More output files will be there Check!!
+
+ 
+
+Hope You are Enjoyed it…!
+
+Finally I will share pdf file. by Vikas Karanth U
+Vikas Karanth U
+15:50
+
+Finally I will share pdf file.
+
+those who are able to do hands-on please sh... by Vikas Karanth U
+Vikas Karanth U
+15:50
+
+those who are able to do hands-on please share  your output.
+
+(pyspark-env) trainee50@blr-landd:~/workspa... by Vikas Karanth U
+Vikas Karanth U
+15:54
+
+(pyspark-env) trainee50@blr-landd:~/workspace/logdemo$ 
+docker exec -it namenode bash -c '
+/opt/hadoop-3.2.1/bin/hdfs dfs -rm -r -f /user/trainee26/logdemo/output || true
+/opt/hadoop-3.2.1/bin/hadoop jar /opt/hadoop-3.2.1/share/hadoop/tools/lib/hadoop-streaming-3.2.1.jar \
+-files /home/trainee26/mapper.py,/home/trainee26/reducer.py \
+-input /user/trainee26/logdemo/input/ \
+-output /user/trainee26/logdemo/output/ \
+-mapper "python3 mapper.py" \
+-reducer "python3 reducer.py"
+'
+
+Deleted /user/trainee50/logdemo/output
+packageJobJar: [/tmp/hadoop-unjar4848605813825426823/] [] /tmp/streamjob805466415546445284.jar tmpDir=null
+2026-05-14 10:21:24,753 INFO client.RMProxy: Connecting to ResourceManager at resourcemanager/172.18.0.5:8032
+2026-05-14 10:21:24,906 INFO client.AHSProxy: Connecting to Application History server at historyserver/172.18.0.11:10200
+2026-05-14 10:21:24,932 INFO client.RMProxy: Connecting to ResourceManager at resourcemanager/172.18.0.5:8032
+2026-05-14 10:21:24,933 INFO client.AHSProxy: Connecting to Application History server at historyserver/172.18.0.11:10200
+2026-05-14 10:21:25,086 INFO mapreduce.JobResourceUploader: Disabling Erasure Coding for path: /tmp/hadoop-yarn/staging/root/.staging/job_1778676622187_0012
+2026-05-14 10:21:25,175 INFO sasl.SaslDataTransferClient: SASL encryption trust check: localHostTrusted = false, remoteHostTrusted = false
+2026-05-14 10:21:25,242 INFO sasl.SaslDataTransferClient: SASL encryption trust check: localHostTrusted = false, remoteHostTrusted = false
+2026-05-14 10:21:25,259 INFO sasl.SaslDataTransferClient: SASL encryption trust check: localHostTrusted = false, remoteHostTrusted = false
+2026-05-14 10:21:25,314 INFO mapred.FileInputFormat: Total input files to process : 1
+2026-05-14 10:21:25,329 INFO sasl.SaslDataTransferClient: SASL encryption trust check: localHostTrusted = false, remoteHostTrusted = false
+2026-05-14 10:21:25,339 INFO sasl.SaslDataTransferClient: SASL encryption trust check: localHostTrusted = false, remoteHostTrusted = false
+2026-05-14 10:21:25,343 INFO mapreduce.JobSubmitter: number of splits:2
+2026-05-14 10:21:25,424 INFO sasl.SaslDataTransferClient: SASL encryption trust check: localHostTrusted = false, remoteHostTrusted = false
+2026-05-14 10:21:25,433 INFO mapreduce.JobSubmitter: Submitting tokens for job: job_1778676622187_0012
+2026-05-14 10:21:25,434 INFO mapreduce.JobSubmitter: Executing with tokens: []
+2026-05-14 10:21:25,572 INFO conf.Configuration: resource-types.xml not found
+2026-05-14 10:21:25,573 INFO resource.ResourceUtils: Unable to find 'resource-types.xml'.
+2026-05-14 10:21:25,821 INFO impl.YarnClientImpl: Submitted application application_1778676622187_0012
+2026-05-14 10:21:25,846 INFO mapreduce.Job: The url to track the job: http://resourcemanager:8088/proxy/application_1778676622187_0012/
+2026-05-14 10:21:25,847 INFO mapreduce.Job: Running job: job_1778676622187_0012
+2026-05-14 10:21:30,916 INFO mapreduce.Job: Job job_1778676622187_0012 running in uber mode : false
+2026-05-14 10:21:30,917 INFO mapreduce.Job:  map 0% reduce 0%
+2026-05-14 10:21:36,968 INFO mapreduce.Job:  map 50% reduce 0%
+2026-05-14 10:21:37,973 INFO mapreduce.Job:  map 100% reduce 0%
+2026-05-14 10:21:41,992 INFO mapreduce.Job:  map 100% reduce 100%
+2026-05-14 10:21:41,997 INFO mapreduce.Job: Job job_1778676622187_0012 completed successfully
+2026-05-14 10:21:42,077 INFO mapreduce.Job: Counters: 54
+        File System Counters
+                FILE: Number of bytes read=32013
+                FILE: Number of bytes written=762536
+                FILE: Number of read operations=0
+                FILE: Number of large read operations=0
+                FILE: Number of write operations=0
+                HDFS: Number of bytes read=60309502
+                HDFS: Number of bytes written=273
+                HDFS: Number of read operations=11
+                HDFS: Number of large read operations=0
+                HDFS: Number of write operations=2
+                HDFS: Number of bytes read erasure-coded=0
+        Job Counters
+                Launched map tasks=2
+                Launched reduce tasks=1
+                Rack-local map tasks=2
+                Total time spent by all maps in occupied slots (ms)=5402
+                Total time spent by all reduces in occupied slots (ms)=2711
+                Total time spent by all map tasks (ms)=5402
+                Total time spent by all reduce tasks (ms)=2711
+                Total vcore-milliseconds taken by all map tasks=5402
+                Total vcore-milliseconds taken by all reduce tasks=2711
+                Total megabyte-milliseconds taken by all map tasks=5531648
+                Total megabyte-milliseconds taken by all reduce tasks=2776064
+        Map-Reduce Framework
+                Map input records=500000
+                Map output records=500000
+                Map output bytes=11650635
+                Map output materialized bytes=33294
+                Input split bytes=250
+                Combine input records=0
+                Combine output records=0
+                Reduce input groups=10
+                Reduce shuffle bytes=33294
+                Reduce input records=500000
+                Reduce output records=10
+                Spilled Records=1000000
+                Shuffled Maps =2
+                Failed Shuffles=0
+                Merged Map outputs=2
+                GC time elapsed (ms)=117
+                CPU time spent (ms)=5430
+                Physical memory (bytes) snapshot=1009545216
+                Virtual memory (bytes) snapshot=8006307840
+                Total committed heap usage (bytes)=1243086848
+                Peak Map Physical memory (bytes)=378163200
+                Peak Map Virtual memory (bytes)=2667155456
+                Peak Reduce Physical memory (bytes)=286928896
+                Peak Reduce Virtual memory (bytes)=2674278400
+        Shuffle Errors
+                BAD_ID=0
+                CONNECTION=0
+                IO_ERROR=0
+                WRONG_LENGTH=0
+                WRONG_MAP=0
+                WRONG_REDUCE=0
+        File Input Format Counters
+                Bytes Read=60309252
+        File Output Format Counters
+                Bytes Written=273
+2026-05-14 10:21:42,077 INFO streaming.StreamJob: Output directory: /user/trainee50/logdemo/output/
+(pyspark-env) trainee50@blr-landd:~/workspace/logdemo$ docker exec namenode hdfs dfs -ls /user/trainee50/logdemo/output/
+Found 2 items
+-rw-r--r--   3 root supergroup          0 2026-05-14 10:21 /user/trainee50/logdemo/output/_SUCCESS
+-rw-r--r--   3 root supergroup        273 2026-05-14 10:21 /user/trainee50/logdemo/output/part-00000
+(pyspark-env) trainee50@blr-landd:~/workspace/logdemo$ docker exec namenode hdfs dfs -cat /user/trainee50/logdemo/output/part-00000
+2026-05-14 10:23:41,476 INFO sasl.SaslDataTransferClient: SASL encryption trust check: localHostTrusted = false, remoteHostTrusted = false
+Application submitted   50112
+Block report processed  49923
+Container allocated     49669
+HDFS write completed    50209
+Heartbeat received      49934
+Map task started        50180
+Reduce task completed   50241
+Spill completed 49807
+Started block replication       49822
+YARN resource check passed      50103
+
+
+EVEL 3 — Hive Integration
+ 
+Step 1: Launch Beeline
+ 
+docker exec -it hive-metastore beeline -u jdbc:hive2://
+ 
+# You will see something like this  jdbc:hive2://>  This is hive prompt. Paste below SQL script in the prompt
+Step 2:
+ 
+SHOW DATABASES;
+CREATE TABLE trainee_test (id INT, name STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY ',';
+SHOW TABLES;
+ 
+jdbc:hive2://>  !quit
+ 
+Step 3: Spark + Hive Integration
+ 
+pyspark --conf spark.sql.catalogImplementation=hive
+ 
+spark.sql("SHOW DATABASES").show()
+ 
+# If this works → Hive Metastore connected

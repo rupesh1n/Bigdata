@@ -1,0 +1,668 @@
+
+
+
+ssh -L 3000:localhost:3000 -L 5000:localhost:5000 -L 8080:localhost:8080 -L 9870:localhost:9870 -L 8088:localhost:8088 -L 8082:localhost:8082 trainee26@10.1.2.183
+
+Password:- Train@User262026
+ this is the command you need to use
+
+
+
+============================================================================
+
+Cloud Lab URL as follows: https://cloud4.rpsconsulting.in/console/
+https://cloud4.rpsconsulting.in/console
+User Name : 26JEF0644_U16
+Password : P@%%$$w0rd@123 
+Birpur@786@!%&
+https://cloud4.rpsconsulting.in/console/#/
+
+hdfs namenode -format
+C:\hadoop-3.3.6\sbin\start-dfs.cmd
+jps
+hdfs dfs -mkdir /testfolder
+hdfs
+hdfs fsck
+hdfs dfs -D dfs.blocksize=67108864 -put Download.tar /data/raw/
+hdfs dfs fsck /data/raw/Download.tar 
+
+Task 1: Building the Environment
+Create a base folder in HDFS called /data_engineering.
+Inside that folder, create three sub-directories at once: landing, processed, and temp.
+Display the recursive list of the /data_engineering folder to confirm all three exist.
+hdfs dfs -mkdir -p /data_engineering/landing /data_engineering/processed /data_engineering/temp
+hdfs dfs -ls -R /data_engineering
+ 
+Task 2: Data Ingestion
+On your local Windows machine, create a text file named server_logs.txt.
+Add exactly 20 lines of dummy text to this file using PowerShell.
+Upload server_logs.txt from your local drive into the /data_engineering/landing directory.
+Verify the upload by listing the contents of the landing folder.
+# Create file locally
+1..20 | ForEach-Object { "Log Entry #$_ : Status 200" } > server_logs.txt
+ 
+# Upload to HDFS
+hdfs dfs -put server_logs.txt /data_engineering/landing/
+hdfs dfs -ls /data_engineering/landing/
+ 
+Task 3: Transformation Simulation
+Read the last 5 lines of the server_logs.txt file directly from HDFS to ensure the data is intact.
+"Process" the data by moving the file from the landing folder to the processed folder.
+Create a backup by copying the file from processed into the temp folder.
+# Inspect the end
+hdfs dfs -tail /data_engineering/landing/server_logs.txt
+ 
+# Move file (Rename/Relocate)
+hdfs dfs -mv /data_engineering/landing/server_logs.txt /data_engineering/processed/
+ 
+# Copy file (Backup)
+hdfs dfs -cp /data_engineering/processed/server_logs.txt /data_engineering/temp/
+ 
+Task 4: Retrieval and Verification
+Download the server_logs.txt from the processed folder back to your local machine, but rename it to final_report.txt.
+Check your local Windows directory to confirm final_report.txt is there.
+# Download and rename
+hdfs dfs -get /data_engineering/processed/server_logs.txt ./final_report.txt
+ 
+# Verify local file exists
+ls final_report.txt
+ 
+Task 5: Cluster Maintenance
+Delete the temp folder and its contents permanently (bypass the Trash).
+Delete the entire /data_engineering directory and all its sub-folders.
+# Permanent delete of a folder
+hdfs dfs -rm -r -skipTrash /data_engineering/temp
+ 
+# Full cleanup
+hdfs dfs -rm -r /data_engineering
+
+Upload the file with a special rule:hdfs dfs -D dfs.blocksize=67108864 -put large_dataset.dat /data/raw/(The 67108864 is just the number of bytes in 64MB).
+Check your work (The X-Ray):hdfs fsck /data/raw/large_dataset.dat -files -blocks
+
+ 
+Set the 1.5GB limit:hdfs dfsadmin -setSpaceQuota 1536M /data/raw
+Look at your folder's current limit status:hdfs dfs -count -q -h /data/raw
+Try to break the rule (Test the limit):Try to copy your 1GB file to make a second one right next to it:hdfs dfs -cp /data/raw/large_dataset.dat /data/raw/duplicate.dat
+ 
+ 
+Delete the file on purpose:hdfs dfs -rm /data/raw/large_dataset.dat
+Make sure it is actually gone:hdfs dfs -ls /data/raw/
+Look inside the hidden Trash folder:hdfs dfs -ls /user/admin/.Trash/Current/data/raw/
+Rescue it (Move it back to the raw folder):hdfs dfs -mv /user/admin/.Trash/Current/data/raw/large_dataset.dat /data/raw/
+
+Upload the file with a special rule:hdfs dfs -D dfs.blocksize=67108864 -put large_dataset.dat /data/raw/(The 67108864 is just the number of bytes in 64MB).
+Check your work (The X-Ray):hdfs fsck /data/raw/large_dataset.dat -files -blocks
+
+ 
+Set the 1.5GB limit:hdfs dfsadmin -setSpaceQuota 1536M /data/raw
+Look at your folder's current limit status:hdfs dfs -count -q -h /data/raw
+Try to break the rule (Test the limit):Try to copy your 1GB file to make a second one right next to it:hdfs dfs -cp /data/raw/large_dataset.dat /data/raw/duplicate.dat
+ 
+ 
+Delete the file on purpose:hdfs dfs -rm /data/raw/large_dataset.dat
+Make sure it is actually gone:hdfs dfs -ls /data/raw/
+Look inside the hidden Trash folder:hdfs dfs -ls /user/admin/.Trash/Current/data/raw/
+Rescue it (Move it back to the raw folder):hdfs dfs -mv /user/admin/.Trash/Current/data/raw/large_dataset.dat /data/raw/
+ 
+ YARN Operations: Quick Lab Exercise
+This exercise guides you through managing and debugging jobs in a Hadoop YARN cluster.
+Part 1: Job Lifecycle Management
+Monitor, execute, and terminate active YARN applications.
+Step 1: Check Active Nodes
+Bash
+ 
+ yarn node -list
+ 
+ Goal: Confirm the Resource Manager sees your workers and their available CPU/Memory.
+Step 2: Launch a Stress Test
+
+yarn jar %HADOOP_HOME%\share\hadoop\mapreduce\hadoop-mapreduce-examples-*.jar pi 50 10000
+
+Goal: Start a Pi calculation job that lasts several minutes to allow for monitoring.
+Step 3: List Running AppsOpen a second terminal:
+
+yarn application -list
+Goal: Capture the Application-Id (e.g., application_123..._0001). This proves the RM is tracking the job's Application Master.
+Step 4: Kill the Application
+
+yarn application -kill <Your_Application_Id>
+
+
+Goal: Signal the RM to instantly destroy all associated Containers.
+Part 2: Debugging & Resource Inspection
+Retrieve metadata and logs from completed or failed jobs.
+Step 1: Check Historical Status
+
+yarn application -status <Your_Application_Id>
+
+Goal: Retrieve the final state (e.g., KILLED, FINISHED, FAILED) from the RM.
+Step 2: Pull Container Logs
+
+yarn logs -applicationId <Your_Application_Id>
+
+
+Goal: View stdout and stderr. Note that YARN aggregates these logs after containers are destroyed for post-mortem debugging.
+Step 3: Inspect Resource Queues
+
+yarn queue -status default
+
+Goal: View the Scheduler's capacity. In production, this manages resource sharing between different teams (e.g., Finance vs. Engineering).
+
+ 
+hadoop jar C:\hadoop-3.3.6\share\hadoop\tools\lib\hadoop-streaming-3.3.6.jar `
+  -files mapper.py -files reducer.py `
+  -mapper "python mapper.py" `
+  -reducer "python reducer.py" `
+  -input /input/server_logs.txt `
+  -output /output_logs_v3
+  
+  
+  hadoop jar C:\hadoop-3.3.6\share\hadoop\tools\lib\hadoop-streaming-3.3.6.jar `
+  -files mapper.py -files reducer.py `
+  -mapper "python mapper.py" `
+  -reducer "python reducer.py" `
+  -input /input/server_logs.txt `
+  -output /output_logs_v3
+  
+  
+  
+  beeline
+  beeline -u jdbc:hive//localhost:10000 -n minutes
+  
+  Create database if not exist rupesh
+  
+  
+   
+Phase 1: Start Hadoop and Hive Services
+Before running queries, you must ensure the distributed file system and the Hive metadata store are active.
+Start Hadoop Services:Open your terminal (Ubuntu/WSL) and run:
+Bash
+ 
+start-dfs.sh
+start-yarn.sh
+Start the Hive Metastore:Hive needs a database to keep track of table schemas.
+Bash
+ 
+hive --service metastore &
+Launch Hive CLI:While hive CLI is older, it is what you requested. You can also use beeline for a more modern interface.
+Bash
+ 
+hive
+ 
+Step 1: Create the Database
+In the Hive CLI, run:
+SQL
+ 
+CREATE DATABASE IF NOT EXISTS testing_db;
+USE testing_db;
+Check HDFS Structure:Open a new terminal window and run the following to see the new directory created for your database:
+Bash
+ 
+hdfs dfs -ls /user/hive/warehouse/
+What to look for: You should see a directory named testing_db.db.
+Step 2: Create the Table
+In the Hive CLI, run:
+SQL
+ 
+CREATE TABLE IF NOT EXISTS candidate_scores (
+    candidate_id INT,
+    candidate_name STRING,
+    technology STRING,
+    score INT,
+    exam_date DATE)ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','STORED AS TEXTFILE;
+Check HDFS Structure:Run this in your second terminal:
+Bash
+ 
+hdfs dfs -ls /user/hive/warehouse/testing_db.db/
+What to look for: A new directory named candidate_scores now exists inside the database folder. At this stage, the folder is empty because no data has been loaded.
+Step 3: Insert Data
+ 
+In the Hive CLI, run:
+SQL
+ 
+INSERT INTO candidate_scores VALUES 
+(101, 'Amritansh', 'DevOps', 95, '2026-04-28'),
+(102, 'Anas', 'Big Data', 92, '2026-04-28'),
+(103, 'Freshman_A', 'Python', 85, '2026-04-28');
+Check HDFS Structure:Check the contents of the table directory:
+Bash
+ 
+hdfs dfs -ls /user/hive/warehouse/testing_db.db/candidate_scores/
+What to look for: You will now see one or more files (e.g., 000000_0). These are the actual text files containing your data.
+View the Raw Data:To see the comma-separated values exactly as they sit in HDFS:
+Bash
+ 
+hdfs dfs -cat /user/hive/warehouse/testing_db.db/candidate_scores/*
+Step 4: Run the Test Query
+In the Hive CLI, run:
+SQL
+ 
+SELECT technology, AVG(score) as average_score FROM candidate_scores GROUP BY technology;
+Check HDFS Structure:Run the ls command again:
+Bash
+ 
+hdfs dfs -ls /user/hive/warehouse/testing_db.db/candidate_scores/
+
+
+
+
+
+
+.\sbin\start-all.cmd
+ 
+hive --service cli
+ 
+Phase 1: Initial Setup
+First, create the baseline table. We will start with the first five columns so that we can actively use the ALTER commands to reach the final state.
+SQL
+ 
+-- 1. Create the base tableCREATE TABLE candidate_scores (
+    candidate_id INT,
+    candidate_name STRING,
+    technology STRING,
+    score INT,
+    exam_date DATE)ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','STORED AS TEXTFILE;
+-- 2. Insert a baseline record so the later WHERE candidate_id = 101 clause has data to readINSERT INTO candidate_scores VALUES 
+(101, 'Amritansh Lal', 'Python', 95, '2026-04-16');
+ 
+Phase 2: Schema Evolution (Matching the Target Schema)
+Now, apply the ALTER commands to add the remaining columns. To ensure the final schema matches your attachment exactly, we intentionally include the specific spelling of eperience_years.
+SQL
+ 
+-- 1. Add the location columnALTER TABLE candidate_scores ADD COLUMNS (location STRING);
+-- 2. Add the remaining columns, matching the exact spelling from the target schemaALTER TABLE candidate_scores ADD COLUMNS (eperience_years INT, emai
+ 
+Phase 3: Monitoring HDFS
+In Hive, ALTER TABLE commands only update the Hive Metastore; they do not modify the physical files in HDFS. To continuously monitor the underlying files before and after operations, use the HDFS DFS commands from your terminal.
+Run this command to check the files currently supporting the table:
+Bash
+ 
+hdfs dfs -ls /user/hive/warehouse/candidate_scores
+ 
+hdfs dfs -cat /user/hive/warehouse/candidate_scores/*
+ 
+Phase 4: Populating the Evolved Table
+Now, execute your provided INSERT OVERWRITE statement. Because Hive maps data by position rather than by column name during an insert, the alias experience_years in the query will map perfectly into the eperience_years column in the schema.
+SQL
+ 
+INSERT OVERWRITE TABLE candidate_scoresSELECT 
+    candidate_id, candidate_name, technology, score, exam_date,
+    'Bengaluru' as location, 5 as experience_years, 'amrit@example.com' as emailFROM candidate_scores WHERE candidate_id = 101UNION ALLSELECT102 as candidate_id, 
+    'Suresh Kumar' as candidate_name, 
+    'Big Data' as technology, 
+    88 as score, 
+    CAST('2026-04-20' AS DATE) as exam_date,
+    'Hyderabad' as location, 
+    3 as experience_years, 
+    'suresh.k@wipro.com' as email
+UNION ALLSELECT103 as candidate_id, 
+    'Priya Sharma' as candidate_name, 
+    'DevOps' as technology, 
+    92 as score, 
+    CAST('2026-04-22' AS DATE) as exam_date,
+    'Pune' as location, 
+    4 as experience_years, 
+    'priya.s@capgemini.com' as email
+UNION ALLSELECT104 as candidate_id, 
+    'Ankit Verma' as candidate_name, 
+    'Python' as technology, 
+    85 as score, 
+    CAST('2026-04-25' AS DATE) as exam_date,
+    'Chennai' as location, 
+    2 as experience_years, 
+    'ankit.v@dev.com' as email;
+ 
+Phase 5: Final Verification
+Run the following command to verify that the final structure matches the screenshot provided.
+SQL
+ 
+DESCRIBE candidate_scores;
+ 
+It should be
+ 
+ 
+List all running jobs:
+Bash
+ 
+yarn application -list
+Check status of a specific job:
+Bash
+ 
+yarn application -status <application_id>
+Kill a stuck job:
+Bash
+ 
+yarn application -kill <application_id>
+ 
+do this in parallel in orde to observe jobs
+ 
+hdfs namenode -format
+ 
+.\sbin\start-all.cmd
+ 
+hive --service cli
+
+linux : rps@123
+ 
+https://cloud4.rpsconsulting.in/console
+
+
+CREATE TABLE whatsapp_users (
+    Name STRING,
+    Region STRING,
+    AccountType STRING,
+    Status STRING
+)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+TBLPROPERTIES("skip.header.line.count"="1");
+
+LOAD DATA INPATH '/whatsapp_data/whatsapp_logs.csv' INTO TABLE whatsapp_logs;
+
+SELECT Sender, Receiver, Size_MB 
+FROM whatsapp_logs 
+WHERE MessageType = 'Video' AND Month = 'December';
+
+cat <<EOF > users.csv
+Name,Region,AccountType,Status
+Amritansh,Bangalore,Premium,Training for MMA fight
+Rahul,Mumbai,Standard,Available
+Priya,Pune,Standard,Busy
+Sneha,Delhi,Premium,At the gym
+Brother,Delhi,Standard,Gaming all night
+EOF
+
+
+hdfs dfs -put users.csv /whatsapp_data/
+
+CREATE TABLE whatsapp_users (
+    Name STRING,
+    Region STRING,
+    AccountType STRING,
+    Status STRING
+)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+TBLPROPERTIES("skip.header.line.count"="1");
+
+LOAD DATA INPATH '/whatsapp_data/users.csv' INTO TABLE whatsapp_users;
+
+
+
+SELECT 
+    logs.Sender, 
+    users.Region, 
+    logs.MessageType, 
+    logs.Size_MB 
+FROM whatsapp_logs logs
+JOIN whatsapp_users users 
+  ON logs.Sender = users.Name
+WHERE logs.MessageType = 'Video';
+
+
+Go to http://localhost:9870 to see the HDFS NameNode UI.
+ 
+Go to http://localhost:8088 to see the YARN Resource Manager UI.
+ 
+
+----------------------------Days-5
+self-copy:
+ 
+cat <<EOF > whatsapp_logs.csv
+
+MessageID,Sender,Receiver,MessageType,Size_MB,Month
+
+101,Amritansh,Brother,Video,45.5,December
+
+102,Rahul,Priya,Text,0.1,December
+
+103,Amritansh,Brother,Photo,2.5,January
+
+104,Priya,Rahul,Video,120.0,December
+
+105,Sneha,Amit,Voice,5.0,January
+
+EOF
+ 
+start-all.sh
+ 
+jps
+ 
+hdfs dfs -mkdir /whatsapp_data
+ 
+hdfs namenode -format
+ 
+hdfs dfs -put whatsapp_logs.csv /whatsapp_data/
+ 
+hdfs dfs -ls /whatsapp_data/
+ 
+hive
+ 
+CREATE TABLE whatsapp_logs (
+    MessageID INT,
+    Sender STRING,
+    Receiver STRING,
+    MessageType STRING,
+    Size_MB FLOAT,
+    Month STRING
+)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+TBLPROPERTIES("skip.header.line.count"="1");
+ 
+LOAD DATA INPATH '/whatsapp_data/whatsapp_logs.csv' INTO TABLE whatsapp_logs;
+ 
+select * from whatsapp_logs;
+ 
+SELECT Sender, Receiver, Size_MB 
+FROM whatsapp_logs 
+WHERE MessageType = 'Video' AND Month = 'December';
+ 
+ SELECT Sender, Receiver, Size_MB 
+
+FROM whatsapp_logs 
+
+WHERE MessageType = 'Video' AND Month = 'December';
+ 
+dfs dfs -put users.csv /whatsapp_data/
+ 
+ 
+CREATE TABLE whatsapp_users (
+
+    Name STRING,
+
+    Region STRING,
+
+    AccountType STRING,
+
+    Status STRING
+
+)
+
+ROW FORMAT DELIMITED
+
+FIELDS TERMINATED BY ','
+
+TBLPROPERTIES("skip.header.line.count"="1");
+ 
+ 
+LOAD DATA INPATH '/whatsapp_data/users.csv' INTO TABLE whatsapp_users;
+ 
+SELECT Sender, SUM(Size_MB) AS Total_Data_Sent
+
+FROM whatsapp_logs
+
+GROUP BY Sender;
+ 
+SELECT 
+
+    logs.Sender, 
+
+    users.Region, 
+
+    logs.MessageType, 
+
+    logs.Size_MB 
+
+FROM whatsapp_logs logs
+
+JOIN whatsapp_users users 
+
+  ON logs.Sender = users.Name
+
+WHERE logs.MessageType = 'Video';
+ 
+hdfs dfsadmin -report
+ 
+import subprocess
+import datetime
+ 
+def run_hive_report():
+    # 1. We log the exact time the job starts
+    start_time = datetime.datetime.now()
+    print(f"[{start_time}] INFO: Starting Nightly WhatsApp Video Report...")
+ 
+    # 2. We define our complex HQL JOIN query right inside Python
+    hql_query = """
+    SET hive.cli.print.header=true;
+    SELECT 
+        users.Region, 
+        SUM(logs.Size_MB) AS Total_Video_Traffic_MB
+    FROM whatsapp_logs logs
+    JOIN whatsapp_users users ON logs.Sender = users.Name
+    WHERE logs.MessageType = 'Video'
+    GROUP BY users.Region;
+    """
+ 
+    # 3. We construct the terminal command (hive -e "query")
+    command = ['hive', '-e', hql_query]
+ 
+    try:
+        # 4. We trigger YARN and HDFS via subprocess
+        print("INFO: Submitting job to YARN Resource Manager...")
+        result = subprocess.run(command, capture_output=True, text=True, check=True)
+        # 5. We save the output to a local report file
+        report_filename = f"video_report_{start_time.strftime('%Y%m%d')}.txt"
+        with open(report_filename, 'w') as file:
+            file.write(result.stdout)
+        print(f"[{datetime.datetime.now()}] SUCCESS: Report generated -> {report_filename}")
+ 
+    except subprocess.CalledProcessError as e:
+        print(f"ERROR: The Hive job failed! Details: {e.stderr}")
+ 
+if __name__ == "__main__":
+    run_hive_report()
+ 
+"Hit Ctrl+O, Enter to save, and Ctrl+X to exit nano
+ 
+python3 nightly_whatsapp_report.py
+ 
+cat video_report_*.txt
+ 
+ -----------------------------------------------------------
+ 
+ ===================================================== Day 6==================
+ 
+ Meeting Details:
+Microsoft Teams meeting
+ 
+Join: https://teams.microsoft.com/meet/49019985334547?p=qJj5YA4JUCUactd4kS
+ 
+Meeting ID: 490 199 853 345 47
+ 
+Passcode: Fz7xD7MS
+
+1) 
+echo "Hadoop is stage-based Spark is pipelined" > transactions.txt
+hdfs dfs -mkdir -p /bank/input
+hdfs dfs -put transactions.txt /bank/input/
+
+2) 
+# Running the built-in logic to "count" transaction types
+hadoop jar $HADOOP_HOME/share/hadoop/mapreduce/hadoop-mapreduce-examples-3.3.6.jar wordcount /bank/input /bank/output
+
+3) 
+cd $SPARK_HOME/conf
+4) 
+cp spark-defaults.conf.template spark-defaults.conf
+nano spark-defaults.conf
+
+5) 
+ctrl+o
+enter
+Paste
+
+# Tell Spark to use YARN as the resource manager
+spark.master                     yarn
+ 
+# Enable event logging (Essential for debugging)
+spark.eventLog.enabled           true
+ 
+# The HDFS directory where Spark will store job logs
+spark.eventLog.dir               hdfs:///spark-logs
+ 
+# Where the History Server will look for those logs
+spark.history.fs.logDirectory    hdfs:///spark-logs
+
+
+ctrl+x
+6)
+hdfs dfs -mkdir /spark-logs
+
+7) Run history server
+$SPARK_HOME/sbin/start-history-server.sh
+
+8) http://localhost:18080/  
+9) Jps (check History Server is running)
+
+10) 
+spark-submit \
+  --class org.apache.spark.examples.SparkPi \
+  --master yarn \
+  --deploy-mode cluster \
+  $SPARK_HOME/examples/jars/spark-examples*.jar \
+  10
+  
+  mkdir -p /tmp/spark-events
+chmod 777 /tmp/spark-events
+
+sudo apt update
+sudo apt install libmysql-java
+
+wget https://dev.mysql.com/get/Downloads/Connector-J/mysql-connector-j-8.0.33.tar.gz
+ 
+tar -xvf mysql-connector-j-8.0.33.tar.gz
+ 
+cp mysql-connector-j-8.0.33/mysql-connector-j-8.0.33.jar /usr/lib/sqoop/lib/
+
+source ~/.bashrc
+
+
+export SQOOP_HOME=/usr/lib/sqoop
+export HADOOP_COMMON_HOME=/opt/hadoop  # Ensure this matches your Hadoop path
+export PATH=$PATH:$SQOOP_HOME/bin
+
+wget https://archive.apache.org/dist/sqoop/1.4.7/sqoop-1.4.7.bin__hadoop-2.6.0.tar.gz
+ 
+tar -xvf sqoop-1.4.7.bin__hadoop-2.6.0.tar.gz
+ 
+mv sqoop-1.4.7.bin__hadoop-2.6.0 /usr/lib/sqoop
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+
+
+
+
+
+
+

@@ -1,0 +1,292 @@
+
+Step 1 — Verify Hadoop is Running
+$curl -s -o /dev/null -w "Hadoop HDFS: %{http_code}\n" http://localhost:9870
+
+Step 2 — Check the DataNodes:
+Even if the NameNode is up, HDFS can't store data if the DataNodes are down. 
+Run this command to check the status of your storage nodes:
+$docker exec -it namenode hdfs dfsadmin -report
+
+Step 3 — Run HDFS Commands (via Docker exec)
+Since Hadoop is inside Docker, all commands run through the namenode container:
+bash# List HDFS root
+docker exec -it namenode hdfs dfs -ls /
+
+# Create a directory
+docker exec -it namenode hdfs dfs -mkdir -p /user/trainee50
+
+# Check disk usage
+docker exec -it namenode hdfs dfs -df -h /
+
+Step 4 — Upload a File to HDFS
+bash# Create a sample file locally
+echo "hello hadoop world hello world" > ~/sample.txt
+
+# Copy it into the namenode container
+docker cp ~/sample.txt namenode:/tmp/sample.txt
+
+# Upload from container into HDFS
+docker exec -it namenode hdfs dfs -put /tmp/sample.txt /user/trainee50/
+
+# Verify
+docker exec -it namenode hdfs dfs -ls /user/trainee50/
+
+Step 5 — Run the WordCount MapReduce Example
+# Create input dir in HDFS
+docker exec -it namenode hdfs dfs -mkdir -p /user/trainee50/input
+
+# Put the file in input dir
+docker exec -it namenode hdfs dfs -put /tmp/sample.txt /user/trainee50/input/
+
+# Run WordCount
+docker exec -it namenode hadoop jar \
+  /opt/hadoop-3.2.1/share/hadoop/mapreduce/hadoop-mapreduce-examples-3.2.1.jar \
+  wordcount /user/trainee50/input /user/trainee50/output
+
+# View results
+docker exec -it namenode hdfs dfs -cat /user/trainee50/output/part-r-00000
+
+# More HDFS commands to practice
+docker exec -it namenode hdfs dfs -du -h /user/trainee50/     # disk usage
+docker exec -it namenode hdfs dfs -cp /user/trainee50/input /user/trainee50/backup   # copy
+docker exec -it namenode hdfs dfs -rm -r /user/trainee50/output   # delete
+
+
+ Level 3 — Move to Hive (SQL on Hadoop)
+bashdocker exec -it hive-metastore beeline -u jdbc:hive2://
+0: jdbc:hive2://>  SHOW DATABASES;
+//> CREATE TABLE trainee_test (id INT, name STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY ',';
+
+SHOW TABLES;
+!quit
+
+Integration with PySpark
+Since your prompt shows you are in a pyspark-env, the next logical step is to ensure Spark can see this Hive Metastore.
+
+In a typical Big Data lab, Spark acts as the "processing engine" while Hive acts as the "catalog" (keeping track of where files are located in HDFS). To test this from your terminal, you would run:
+
+
+# Exit the docker exec beeline first, then run:
+$ pyspark --conf spark.sql.catalogImplementation=hive
+Once inside PySpark, run:
+
+
+>>> spark.sql("SHOW DATABASES").show()
+If you see the same databases you saw in Beeline, your Spark-to-Hive integration is perfectly configured.
+
+Level 4 — PySpark on your Spark Master
+bashdocker exec -it spark-master /opt/spark/bin/pyspark
+
+
+This uses the Spark Context (sc) to parallelize a simple list. It confirms that the basic communication between Python and the Spark JVM is functional.
+
+Python
+data = [1, 2, 3, 4, 5]
+distData = sc.parallelize(data)
+result = distData.map(lambda x: x * 10).collect()
+
+print(result)
+# Expected Output: [10, 20, 30, 40, 50]
+
+2. The DataFrame Test
+This uses the spark session to create a structured DataFrame. It’s the modern way to use Spark and confirms the SQL engine is ready.
+
+Python
+df = spark.createDataFrame([("Alice", 1), ("Bob", 2)], ["Name", "ID"])
+df.show()
+
+# Test a simple filter
+df.filter(df.ID > 1).show()
+
+Since you’ve got the PySpark shell up and running, let’s put that local cluster to work. Here are three quick tests ranging from a simple "Hello World" to a more "Spark-like" data transformation.1. The "Hello World" (RDD Test)This uses the Spark Context (sc) to parallelize a simple list. It confirms that the basic communication between Python and the Spark JVM is functional.Pythondata = [1, 2, 3, 4, 5]
+distData = sc.parallelize(data)
+result = distData.map(lambda x: x * 10).collect()
+
+print(result)
+# Expected Output: [10, 20, 30, 40, 50]
+2. The DataFrame TestThis uses the spark session to create a structured DataFrame. It’s the modern way to use Spark and confirms the SQL engine is ready.Pythondf = spark.createDataFrame([("Alice", 1), ("Bob", 2)], ["Name", "ID"])
+df.show()
+
+# Test a simple filter
+df.filter(df.ID > 1).show()
+
+3. Distributed Calculation (Pi Estimation)If you want to see Spark actually crunch some numbers, this classic example estimates the value of $\pi$ by throwing "darts" at a square.Pythonimport random
+
+def inside(p):
+    x, y = random.random(), random.random()
+    return x*x + y*y < 1
+
+num_samples = 100000
+count = sc.parallelize(range(0, num_samples)) \
+          .filter(inside).count()
+
+print(f"Pi is roughly {4.0 * count / num_samples}")
+
+----------------------------------------------------------
+# Create input and output directories in HDFS
+docker exec namenode hdfs dfs -mkdir -p /user/trainee50/logdemo/input
+docker exec namenode hdfs dfs -mkdir -p /user/trainee50/logdemo/output
+
+# Verify folders created
+docker exec namenode hdfs dfs -ls /user/trainee50/logdemo/
+
+Step 3 — Upload Log File to HDFS
+bash
+# Copy log file into namenode container
+docker cp /tmp/hadoop_bigdata_demo.log namenode:/tmp/hadoop_bigdata_demo.log
+# Upload from namenode into HDFS input folder
+docker exec namenode hdfs dfs -put /tmp/hadoop_bigdata_demo.log \
+  /user/trainee50/logdemo/input/
+# Verify upload
+docker exec namenode hdfs dfs -ls /user/trainee50/logdemo/input/
+docker exec namenode hdfs dfs -cat /user/trainee50/logdemo/input/hadoop_bigdata_demo.log
+========================================================================
+docker exec namenode hdfs dfs -ls /user/trainee50/logdemo/
+
+Write the MapReduce Program
+
+Keep these files in 
+
+/home/trainee50/workspace/logdemo
+
+#mapper.py
+#!/usr/bin/env python3
+import sys
+
+for line in sys.stdin:
+    try:
+        event = line.split(":")[1].split(",")[0].strip()
+        print(f"{event}\t1")
+    except:
+        continue
+
+#reducer.py
+#!/usr/bin/env python3
+import sys
+
+current_key = None
+current_count = 0
+
+for line in sys.stdin:
+    key, value = line.strip().split("\t")
+    value = int(value)
+
+    if current_key == key:
+        current_count += value
+    else:
+        if current_key:
+            print(f"{current_key}\t{current_count}")
+        current_key = key
+        current_count = value
+
+if current_key:
+    print(f"{current_key}\t{current_count}")
+
+
+
+docker ps
+ STEP 1: Create user folder inside container
+docker exec -it namenode mkdir -p /home/trainee50/
+
+ STEP 2: Copy your files (SAFE )
+docker cp mapper.py namenode:/home/trainee50/
+docker cp reducer.py namenode:/home/trainee50/
+
+STEP 3: Give execute permission
+docker exec -it namenode chmod +x /home/trainee50/mapper.py
+docker exec -it namenode chmod +x /home/trainee50/reducer.py
+
+STEP 4: Clean old output (IMPORTANT)
+docker exec -it namenode hdfs dfs -rm -r /user/trainee50/logdemo/output
+
+
+
+Step 5 — Run the MapReduce Program
+
+cd /home/trainee50/workspace/logdemo
+vi mapper.sh
+#!/bin/bash
+while IFS= read -r line
+do
+    event=$(echo "$line" | awk -F'): ' '{print $2}' | awk -F', dataSize=' '{print $1}')
+    if [ -n "$event" ]; then
+        echo -e "${event}\t1"
+    fi
+done
+
+$ vi reducer.sh
+
+#!/bin/bash
+awk -F'\t' '
+{
+    count[$1] += $2
+}
+END {
+    for (k in count) {
+        print k "\t" count[k]
+    }
+}'
+
+
+
+$ docker exec -it namenode mkdir -p /home/trainee50/
+docker cp mapper.sh namenode:/home/trainee50/
+docker cp reducer.sh namenode:/home/trainee50/
+docker exec -it namenode chmod +x /home/trainee50/mapper.sh /home/trainee50/reducer.sh
+
+output:
+Successfully copied 198B (transferred 2.05kB) to namenode:/home/trainee50/
+Successfully copied 117B (transferred 2.05kB) to namenode:/home/trainee50/
+
+docker exec -it namenode bash -lc '
+/opt/hadoop-3.2.1/bin/hdfs dfs -rm -r -f /user/trainee50/logdemo/output || true
+
+/opt/hadoop-3.2.1/bin/hadoop jar /opt/hadoop-3.2.1/share/hadoop/tools/lib/hadoop-streaming-3.2.1.jar \
+-D mapreduce.framework.name=yarn \
+-D yarn.app.mapreduce.am.env=HADOOP_MAPRED_HOME=/opt/hadoop-3.2.1 \
+-D mapreduce.map.env=HADOOP_MAPRED_HOME=/opt/hadoop-3.2.1 \
+-D mapreduce.reduce.env=HADOOP_MAPRED_HOME=/opt/hadoop-3.2.1 \
+-D mapreduce.application.classpath=/opt/hadoop-3.2.1/share/hadoop/mapreduce/*:/opt/hadoop-3.2.1/share/hadoop/mapreduce/lib/* \
+-D mapreduce.job.name="logdemo-trainee50" \
+-D mapreduce.job.reduces=1 \
+-files file:///home/trainee50/mapper.sh,file:///home/trainee50/reducer.sh \
+-input /user/trainee50/logdemo/input/ \
+-output /user/trainee50/logdemo/output/ \
+-mapper "/bin/bash mapper.sh" \
+-reducer "/bin/bash reducer.sh"
+'
+
+
+
+
+
+
+
+
+bash
+cd ~/workspace/logdemo
+source ~/pyspark-env/bin/activate
+python3 log_mapreduce.py
+Expected output:
+=======================================================
+   LOG FILE ANALYSIS — MapReduce with PySpark
+=======================================================
+
+📂 Reading log file from HDFS...
+Total log lines read: 20
+
+📊 MAP PHASE — Count by Log Level:
++-----+-----+
+|level|count|
++-----+-----+
+| INFO|   10|
+|ERROR|    5|
+| WARN|    4|
++-----+-----+
+
+🚨 REDUCE PHASE — Error Events Only:
+Total ERROR count: 5
+
+💾 Writing results to HDFS output folder...
+✅ Results written to HDFS!
+

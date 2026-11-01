@@ -1,0 +1,826 @@
+Instructions:
+1. Join on time
+	Late joining disrupts the flow and your own understanding
+
+2. Stay focused during session
+	- Keep your mic mute unless speaking
+	- Avoid parallel work or distractions
+
+3. Ask Questions at right momemnt
+	- Note down your doubts while the topic is being explained
+	- Ask questions at logical end of a topic, not in the middle
+
+4. Daily Practice is mandatory
+	- Practice what is taught every day
+	- Even 30-40 minutes daily is better than long, irregular study
+
+5. Be consistent and committed
+	- Learning compounds with consistency
+	- Missing sessions or practice will directly affects your progress
+
+This is not just a class - it is a transformation journey.
+
+
+----------------------------------------------------------------
+04-June-2026
+--------------------------------------------------------------
+Question:
+
+	result_df = fire_df.select("CallType", "Zipcode").where("CallType is not null").groupBy("CallType", "ZipCode").count().orderBy("count", ascending=False).limit(3)
+
+
+ascending=False: This is the correct, official parameter. PySpark recognizes it and sorts your data from highest count to lowest count (descending).
+
+descending is not correct, pyspark silently ignores it.
+
+
++--------+---------+------------+------------+--------+----+--------------+--------+--------+----------+-----------------+------+----------------+-------+---------+
+|ARR_TIME|CANCELLED|CRS_ARR_TIME|CRS_DEP_TIME|DEP_TIME|DEST|DEST_CITY_NAME|DISTANCE| FL_DATE|OP_CARRIER|OP_CARRIER_FL_NUM|ORIGIN|ORIGIN_CITY_NAME|TAXI_IN|WHEELS_ON|
++--------+---------+------------+------------+--------+----+--------------+--------+--------+----------+-----------------+------+----------------+-------+---------+
+|    1348|        0|        1400|        1115|    1113| ATL|   Atlanta, GA|     946|1/1/2000|        DL|             1451|   BOS|      Boston, MA|      5|     1343|
+|    1543|        0|        1559|        1315|    1311| ATL|   Atlanta, GA|     946|1/1/2000|        DL|             1479|   BOS|      Boston, MA|      7|     1536|
+|    1651|        0|        1721|        1415|    1414| ATL|   Atlanta, GA|     946|1/1/2000|        DL|             1857|   BOS|      Boston, MA|      9|     1642|
++--------+---------+------------+------------+--------+----+--------------+--------+--------+----------+-----------------+------+----------------+-------+---------+
+
+
++----------+----------+-----------------+------+----------------+----+--------------+------------+--------+---------+-------+------------+--------+---------+--------+
+|   FL_DATE|OP_CARRIER|OP_CARRIER_FL_NUM|ORIGIN|ORIGIN_CITY_NAME|DEST|DEST_CITY_NAME|CRS_DEP_TIME|DEP_TIME|WHEELS_ON|TAXI_IN|CRS_ARR_TIME|ARR_TIME|CANCELLED|DISTANCE|
++----------+----------+-----------------+------+----------------+----+--------------+------------+--------+---------+-------+------------+--------+---------+--------+
+|2000-01-01|        DL|             1451|   BOS|      Boston, MA| ATL|   Atlanta, GA|        1115|    1113|     1343|      5|        1400|    1348|        0|     946|
+|2000-01-01|        DL|             1479|   BOS|      Boston, MA| ATL|   Atlanta, GA|        1315|    1311|     1536|      7|        1559|    1543|        0|     946|
+|2000-01-01|        DL|             1857|   BOS|      Boston, MA| ATL|   Atlanta, GA|        1415|    1414|     1642|      9|        1721|    1651|        0|     946|
++----------+----------+-----------------+------+----------------+----+--------------+------------+--------+---------+-------+------------+--------+---------+--------+
+
+
+CRS_DEP_TIME
+DEP_TIME
+WHEELS_ON
+CRS_ARR_TIME
+ARR_TIME
+
+to hour to minute interval
+
+TAXI_IN - to make it a minute interval
+
+11:15
++----------+----------+-----------------+------+----------------+----+--------------+--------------------+--------------------+--------------------+--------------------+--------------------+--------------------+---------+--------+
+|   FL_DATE|OP_CARRIER|OP_CARRIER_FL_NUM|ORIGIN|ORIGIN_CITY_NAME|DEST|DEST_CITY_NAME|        CRS_DEP_TIME|            DEP_TIME|           WHEELS_ON|             TAXI_IN|        CRS_ARR_TIME|            ARR_TIME|CANCELLED|DISTANCE|
++----------+----------+-----------------+------+----------------+----+--------------+--------------------+--------------------+--------------------+--------------------+--------------------+--------------------+---------+--------+
+|2000-01-01|        DL|             1451|   BOS|      Boston, MA| ATL|   Atlanta, GA|INTERVAL '11:15' ...|INTERVAL '11:13' ...|INTERVAL '13:43' ...|INTERVAL '05' MINUTE|INTERVAL '14:00' ...|INTERVAL '13:48' ...|        0|     946|
+|2000-01-01|        DL|             1479|   BOS|      Boston, MA| ATL|   Atlanta, GA|INTERVAL '13:15' ...|INTERVAL '13:11' ...|INTERVAL '15:36' ...|INTERVAL '07' MINUTE|INTERVAL '15:59' ...|INTERVAL '15:43' ...|        0|     946|
+|2000-01-01|        DL|             1857|   BOS|      Boston, MA| ATL|   Atlanta, GA|INTERVAL '14:15' ...|INTERVAL '14:14' ...|INTERVAL '16:42' ...|INTERVAL '09' MINUTE|INTERVAL '17:21' ...|INTERVAL '16:51' ...|        0|     946|
+|2000-01-01|        DL|             1997|   BOS|      Boston, MA| ATL|   Atlanta, GA|INTERVAL '17:15' ...|INTERVAL '17:20' ...|INTERVAL '19:55' ...|INTERVAL '10' MINUTE|INTERVAL '20:13' ...|INTERVAL '20:05' ...|        0|     946|
+|2000-01-01|        DL|             2065|   BOS|      Boston, MA| ATL|   Atlanta, GA|INTERVAL '20:15' ...|INTERVAL '20:10' ...|INTERVAL '22:30' ...|INTERVAL '10' MINUTE|INTERVAL '23:00' ...|INTERVAL '22:40' ...|        0|     946|
+|2000-01-01|        US|             2619|   BOS|      Boston, MA| ATL|   Atlanta, GA|INTERVAL '06:50' ...|INTERVAL '06:49' ...|INTERVAL '09:56' ...|INTERVAL '07' MINUTE|INTERVAL '09:55' ...|INTERVAL '10:03' ...|        0|     946|
+|2000-01-01|        US|             2621|   BOS|      Boston, MA| ATL|   Atlanta, GA|INTERVAL '14:40' ...|INTERVAL '14:46' ...|INTERVAL '17:13' ...|INTERVAL '04' MINUTE|INTERVAL '17:38' ...|INTERVAL '17:17' ...|        0|     946|
+|2000-01-01|        DL|              346|   BTR| Baton Rouge, LA| ATL|   Atlanta, GA|INTERVAL '17:40' ...|INTERVAL '17:44' ...|INTERVAL '19:57' ...|INTERVAL '09' MINUTE|INTERVAL '20:08' ...|INTERVAL '20:06' ...|        0|     449|
+|2000-01-01|        DL|              412|   BTR| Baton Rouge, LA| ATL|   Atlanta, GA|INTERVAL '13:45' ...|INTERVAL '13:45' ...|INTERVAL '15:52' ...|INTERVAL '09' MINUTE|INTERVAL '16:22' ...|INTERVAL '16:01' ...|        0|     449|
+|2000-01-01|        DL|              299|   BUF|     Buffalo, NY| ATL|   Atlanta, GA|INTERVAL '12:45' ...|INTERVAL '12:45' ...|INTERVAL '14:43' ...|INTERVAL '05' MINUTE|INTERVAL '14:55' ...|INTERVAL '14:48' ...|        0|     712|
+|2000-01-01|        DL|              495|   BUF|     Buffalo, NY| ATL|   Atlanta, GA|INTERVAL '20:35' ...|INTERVAL '20:35' ...|INTERVAL '22:26' ...|INTERVAL '09' MINUTE|INTERVAL '22:41' ...|INTERVAL '22:35' ...|        0|     712|
+|2000-01-01|        DL|              677|   BUF|     Buffalo, NY| ATL|   Atlanta, GA|INTERVAL '07:10' ...|INTERVAL '07:10' ...|INTERVAL '09:40' ...|INTERVAL '07' MINUTE|INTERVAL '09:25' ...|INTERVAL '09:47' ...|        0|     712|
+|2000-01-01|        DL|              251|   BWI|   Baltimore, MD| ATL|   Atlanta, GA|INTERVAL '20:40' ...|INTERVAL '21:00' ...|INTERVAL '22:35' ...|INTERVAL '07' MINUTE|INTERVAL '22:33' ...|INTERVAL '22:42' ...|        0|     576|
+|2000-01-01|        DL|             1003|   BWI|   Baltimore, MD| ATL|   Atlanta, GA|INTERVAL '16:35' ...|INTERVAL '18:38' ...|INTERVAL '20:20' ...|INTERVAL '12' MINUTE|INTERVAL '18:32' ...|INTERVAL '20:32' ...|        0|     576|
+|2000-01-01|        DL|             1501|   BWI|   Baltimore, MD| ATL|   Atlanta, GA|INTERVAL '14:30' ...|INTERVAL '14:35' ...|INTERVAL '16:23' ...|INTERVAL '12' MINUTE|INTERVAL '16:34' ...|INTERVAL '16:35' ...|        0|     576|
+|2000-01-01|        DL|             1907|   BWI|   Baltimore, MD| ATL|   Atlanta, GA|INTERVAL '05:30' ...|INTERVAL '05:30' ...|INTERVAL '07:16' ...|INTERVAL '04' MINUTE|INTERVAL '07:23' ...|INTERVAL '07:20' ...|        0|     576|
+|2000-01-01|        DL|             2063|   BWI|   Baltimore, MD| ATL|   Atlanta, GA|INTERVAL '12:50' ...|                NULL|                NULL|                NULL|INTERVAL '14:49' ...|                NULL|        1|     576|
+|2000-01-01|        DL|             2111|   BWI|   Baltimore, MD| ATL|   Atlanta, GA|INTERVAL '18:45' ...|INTERVAL '18:55' ...|INTERVAL '20:41' ...|INTERVAL '09' MINUTE|INTERVAL '20:46' ...|INTERVAL '20:50' ...|        0|     576|
+|2000-01-01|        US|             2632|   BWI|   Baltimore, MD| ATL|   Atlanta, GA|INTERVAL '07:10' ...|INTERVAL '07:10' ...|                NULL|                NULL|INTERVAL '09:05' ...|                NULL|        0|     576|
+|2000-01-01|        US|             2967|   BWI|   Baltimore, MD| ATL|   Atlanta, GA|INTERVAL '17:00' ...|INTERVAL '17:00' ...|INTERVAL '18:45' ...|INTERVAL '06' MINUTE|INTERVAL '18:53' ...|INTERVAL '18:51' ...|        0|     576|
++----------+----------+-----------------+------+----------------+----+--------------+--------------------+--------------------+--------------------+--------------------+--------------------+--------------------+---------+--------+
+
+1. FL_DATE - as dep_date
+2. arrival date = depart_date + depart_time + wheels_on + taxi_tim 
+3. full timestamp value
+	1. crs_dep_time
+	2. dep_time
+	3. crs_arr_time
+	4. arr_time
+
+
+dep_date + dep_time --> crs_dep_time
+
+
+df.withColumn
+
+Filter and removing duplicates
+
+
+Logic:
+adding two columns:
+
+1. increment - 10% of the salary upto 3000 maximum increment
+2. revised_salary = salary + increment
+
+
+
+----------------------------------------------------------------
+01-June-2026
+--------------------------------------------------------------
+
+What is Spark?
+	
+Data Engineering - Building pipelines that collect, clean, transform, and prepare data.
+Data Science - Extracting insights fro the data.
+
+Machine learning - training models using data.
+	MLlib- which contains the machine learning algorithms.
+	
+500 TB - 
+Who is using spark?
+	80% of fortune 500 companies are using spark.
+	
+capability of apache spark:
+	- ANSI SQL
+	- Batch processing API
+	- Stream Processing API
+	- Machine Learning API
+		- predict future events
+		- detect anomalies
+		 recommend products
+		 
+		 MLLib
+			- Classification
+		
+	
+Why Apache spark?
+	- Abstraction - hide internal complexities and provide simpler interface to users.
+	- Ease of use
+	- Unified 
+	- Opensource
+	- Ecosystem
+
+Spark Architecture:
+		Spark Core - distributed execution engine for apache spark
+			
+			Provides:
+				- RDD API
+				- task scheduling
+				- Memory Management
+				- Fault Tolerance
+				- Distributed Processing
+				- Job Scheduling
+				- Resource Manager Integration
+				
+			spark.readStream.format("kafka").load();	
+		
+	
+Spark Platform:
+	Cloud platform
+		- Databricks
+		- Amazon EMR
+		- Google cloud Dataproc
+	
+	On Premise Platform
+		- Cloudera Hadoop platform
+		
+
+Dev environment:
+	- Notebook (cloud databrics/Local)
+	- IDE (pycharm/vscode)
+	
+	
+	Setup
+	Notebook - write code
+	
+Setup Spark Local (Windows environment)
+
+	 Spark On Local Machine
+ 
+	1. JDK 21
+	2. Python 3.10+ (Python 3.11.9)
+	3. Spark Binaries (download and extract tgz and tar and put it under C:/spark/spark-402) (Use Spark 4.0.2)
+	4. Hadoop WinUtils (https://github.com/cdarlint/winutils)
+		Download and copy latest hadoop 3.3.6 content, and put it under c:/spark/winutils)
+	5. Environment Variables
+		- SPARK_HOME  (C:\spark\spark-402)
+			%SPARK_HOME%\bin -- add in path variable
+		
+		- HADOOP_HOME (C:\spark\winutils)
+			%HADOOP_HOME%\bin -- add in path variable
+			
+		- PYSPARK_PYTHON (version of python you want to use it in the spark) 
+			commad prompt:
+				where is python
+				copy and use it as the value of this env variable
+		
+		- PYTHONPATH 
+			C:\spark\spark-402\python;
+			C:\spark\spark-402\python\lib\py4j-0.10.9.9-src.zip
+			
+	pyspark - command to verify
+	
+	
+	PYSPARK_DRIVER_PYTHON=jupyter
+	PYSPARK_DRIVER_PYTHON_OPTS=notebook
+	
+	6. IDE
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+----------------------------------------------------------------
+28-May-2026
+--------------------------------------------------------------
+	
+	Today we are using,
+		SPark
+		Pyspark
+		Databricks
+		Data cloud lakes
+		AI Pipelines
+
+Business Computing
+
+	Business had data:
+
+	Banks had:
+		- account records
+		- transactions
+		- salary processing
+	Challange
+		- How do we process business data using computers?
+
+	COBOL - Common Business Oriented Language
+
+	Mostly running on Mainframe computers from IBM, Unisys
+
+	Batch Processing
+
+
+But slowly businesses started growing...
+	Companies started generating more and more data:
+
+	Now they need:
+		- Better storage
+		- Faster query
+		- Easier reporting
+
+	RDBMS - Relational Database management system
+
+	Ex:
+		- Oracle Database
+		- Microsoft SQL Server
+		- MySQL
+		- PostgreSQL
+
+	Organize data into a predictable structure:
+	 - tables
+	 - rows
+	 - comumns
+
+	 Customer:
+	 	ID 		Name 		CITY
+
+	 	1 		Amit 		Bangalore
+	 	2 		Raj			Mumbai
+
+	Features:
+		1. SQL - Easy query language
+
+
+		Before SQL, Developers had to write massive cobol programs:
+		Now business users should simply write:
+			SELECT * FROM Customers WHERE CITY="bangalore"
+
+
+		2. Procedural Languages
+			Databases introduced:
+				- PL/SQL
+				- T-SQL
+
+			Ex:
+				- Interest calculation
+				- EMI Calculation
+				- Payroll logic
+
+		3. JDBC and ODBC
+
+		Applications needed to connect with databases
+
+	Types of data:
+		1. Structured Data
+
+
+		2. Semi-Structured Data
+
+			Ex: 
+				JSON
+				XML
+
+				{
+					"name":"Dhruvik",
+					"skills": ["Java","Spark"]
+
+				}
+
+				<CUSTOMER>
+					<Name>DHRUVIK</NAME>
+					<SKILL>JAVA</SKILL>
+				</CUSTOMER>
+
+		3. UnStructured Data
+			Then came:
+				- Videos
+				- Images
+				- Emails
+				- Audio
+				- Social media posts..
+
+
+Big Data Problem (3V problem)
+	1. Volume
+		Huge amount of data.
+
+		Eariler: MBs and GBs
+
+		Now: TBs, PB, Exabytes
+
+	2. Velocity
+		Data generated at extremely high speed.
+
+		Ex:
+			- Stock market trades
+			- UPI transactions
+			- IoT Sensors
+
+		Million of records generated every seconds.
+
+	3. Variety
+
+	Different formats:
+		- tables
+		- JSON
+		- XML
+		- images
+		- videos
+		- audio
+		- logs
+
+Scalability		
+
+	Vertical Scaling
+		- buy bigger CPU
+		- Bigger RAM
+		- Bigger server
+
+	Cost: Very expensive
+
+	Teradata Appliance
+	Exadata appliance
+
+Fault tolerance
+	if one giant server crashes:
+		- System impact huge
+
+
+Many small machines work together?
+Hadoop got introduced
+
+Distributed appraocah:
+	Cluster computing
+
+	Suppose:
+		100 machiens
+		each has 16 CPU cores
+
+	Combines together:
+		100 X 16 = 1600 CPU Cores
+
+
+Hadoop Revolution
+
+3 main components:
+	1. HDFS - Distributed Storage
+
+		NameNode - 
+
+			Stores metadata:
+				- File names
+				- block locations
+				- file size
+
+		DataNode
+			Stores actual blocks:
+
+		Replication:
+			Each block copied multiple times:
+
+			If one machine crash:
+				- data still safe
+
+
+
+
+
+	2. YARN - Cluster operating system
+		Yet Another Resource Nagotiator
+
+
+		YARN manages:
+			- CPU
+			- RAM
+			- Scheduling
+			- Cluster resources
+
+		YARN has three components:
+			- RM - Resource Manager
+				Master controller
+
+			- NM - Node Manager
+			- AM - Application Mater
+
+	3. MapReduce - Distributed Processing
+
+
+	Map Funciton
+		Each machine process small block
+
+		Node1 -> process block1
+		Node2 -> process block2
+
+
+	Reduce Function
+		Combine all paritial outputs
+		Final result generated.
+
+Hive
+	Hive allowed SQL on Hadoop
+
+HBase
+	Distributed NoSQL Database
+
+Pig 
+	Scripting layer over MapReduce
+
+Sqoop
+	- Transfer data between:
+		- RDBMS
+		- Hadoop
+
+
+OOzie
+	- WOrkflow schedular
+
+
+MapReduce - Bottleneck
+
+It relied on heavy disk usage. 
+
+Problem 1: Performance
+
+MapReduce writes intermediate data to disk repeatedly
+Very slow
+
+Problem 2: Complex Development
+
+	Huge java code required
+
+
+Problem 3: Language Support
+	Mostly java focused
+
+Problem 4: Storage Limitation
+Mostly dependent on HDFS.
+
+Cloud storage became more attractive:
+	- Amazon S3
+	- Microsoft ADLS
+	etc
+
+Problem 5: Resource Management
+
+YARN was heavy
+
+Industry wanted:
+	 - Lightweight containers
+	 - Kubernetes
+	 - Cloud native platforms
+
+
+Apache Spark Revolution 
+
+	processing done from the disk into RAM -- Massive speed boost.
+
+	10x to 100X - faster than MapReduce
+
+
+	2. Ease of Development
+		Spark introduced
+			- Spark SQL
+			- DataFrame APIs
+			- Composable functions
+
+		Much easier than MapReduce
+
+
+	3. Language Support
+		Spark supports
+			- Java
+			- Python (pyspark)
+			- R
+			- Scala
+
+	4. Storage Flexibility
+		Spark works with
+			- HDFS
+			- S3
+			- ADLS - Azure Data Lake Storage
+			- GCS 
+	5. Resource Management Flexibility
+		Spark can run on:
+			- YARN
+			- Mesos
+			- Kubernetes
+
+		GCP - Data Proc 
+
+
+1. Spark With Hadoop
+	Spark + HDFC + YARN
+
+
+2. Spark without Hadoop
+	Modern Lakehouse architecture:
+		Spark + S3 + K8s
+
+
+
+Data Warehouse
+Data Lake
+Data LakeHouse
+	
+	Modern architecture combining
+		- Low cost scalable storage of data lake with
+		- transactional and analytical capabilities of Data warehouse
+
+
+	Core Idea:
+		Use Cheap cloud storage.
+
+		Adds:
+			- metadata layter
+			- transaction layer
+			- schema enforcement
+			- indexing
+			- governance
+
+		on top of datalake
+
+Key technologies:
+
+	Data Lake
+		Created by Databricks
+
+		Adds:
+			- ACID transactions
+			- Schema evolution
+			- time travel
+			- metadata management
+		on top of data lake storage
+
+
+	Apache Iceberg
+		Modern table format for huge analytical datasets.
+
+	Apache Hudi
+		Supports incremental processing and streaming ingestion
+
+
+
+
+
+
+ACID
+	- Atomicity
+	 	treated as single, indivisible unit of work
+
+	- Consistency (Valid state)
+		like negative balance, or missing key
+
+	- Isolation (Independent execution)
+
+	- Durability (Permanently saved)
+	
+
+
+Database transactions processed reliably
+
+
+Ex
+	Dhruvik 		-   Prabhat
+
+	$100 (Debit)            $100 (Credit)
+
+
+{
+	
+		Debit - tx
+		Credt - tx
+}
+
+
+{
+	
+		Debit - tx
+		Credt - tx
+}
+
+
+
+
+Question:
+	1. What are the top 3 zip codes that accounted for the most calls?
+
+
+	select CallType, Zipcode, count(*) as count
+		from sf_fire_calls
+	where CallType is not null
+	group by CallType, Zipcode
+	order by count desc
+	limit 3
+
+
+	2. How many distinct types of calls were made to the Fire Department?
+
+	select count(distinct CallType) as distinct_call_type_count from sf_fire_calls;
+
+
+	3. What were distinct types of calls made to the Fire Department?
+
+		select distinct CallType as distinct_call_types from sf_fire_calls where CallType is not null;
+
+	4. Find out all response for delayed times greater than 5 mins?
+
+		select CallNumber, Delay from sf_fire_calls
+			where
+				Delay>5
+
+
+	5. What were the most common call types?
+
+		select CallType, count(*) as count
+			from sf_fire_calls
+		where CallType is not null
+		group by CallType
+		order by count desc
+
+--------------- 
+SELF 
+
+6.What Zip codes accounted for most common calls?
+7. What San Francisco neighborhoods are in zip codes 94102 and 94103?
+		select distinct Neighborhood, Zipcode
+		from sf_fire_calls
+		where zipcode = 94102 or Zipcode = 94103
+
+8.	What was the sum of all calls, average, min and max of the response times for calls?
+
+	select sum(NumAlarms), avg("Delay"), min(Delay), max(Delay)
+		from 
+			sf_fire_calls
+
+9. How many distinct years of data in the CSV file?
+
+10. What week of the year in 2018 had the most fire calls?
+
+--------------------------
+
+
+
+
+How many ways to create dataframe?
+	1. Create a dataframe using a connector
+
+		CSV connector
+		JSON Connector
+
+
+	2. Create a dataframe by reading a spark table
+
+		table_df = spark.table("sf_fire_calls")
+
+	3. Create a dataframe reading the result of a SQL query
+
+	table_name = "sf_fire_calls"
+
+	sql_df = spark.sql(f"""
+		select * from {table_name} limit 5
+	""")
+
+	4. Create a dataframe using python list
+
+		data_list = [(),(),()]
+
+		list_df = spark.createDataFrame(data_list, schema);
+
+	5. Create a single column dataframe from a range
+
+		range_df = spark.range(1000, 1010, 2)
+
+
+Spark data types
+	
+	Age = 25
+
+	Spark Data Types
+
+	from pyspark.sql.types 
+
+
+		3 categories
+
+			1. Primitive Types (Simple types)
+
+				StringType - Stores text values
+				IntegerType - Stores 32-bit integers 
+				LongType - Stores large integer values
+				ShortType - Stores smaller integers
+				ByteType - Stores very small integer values (-128 to 127)
+				FloatType - Stores decimal values with single precision (12.5, 99.99)
+				DoubleType - Stores decimal values with double precision
+				BooleanType = Stores True/False
+				DateType - Stores only date (2026-06-03)
+				TimestampType - Stores date and Time (2026-06-03 10:45:23)
+				TimestampNTZType - Stores timestamp without timezone information
+
+			2. Complex Types
+
+				ArrayType - Stores collection of values
+				["Java","Python","Spark"]
+
+				MapType - Stores key-value pairs
+				
+				MapType(
+					StringType(),
+					IntegerType()
+				)
+
+			3. StructType
+				Stores nested records
+
+				Similar to the JSON object
+
+
+				StructType(
+					[
+						StructField("name", StringType()),
+						StructField("age", IntegerType())
+					]
+				)
+
+
+			3. Special Types
+
+				1. BinaryType - Stores Binary Data
+				2. NullType - Represents NULL values
+
+Interval Types?
+	purhcase date = 2026-01-01
+	subscription duration = 6 months
+
+	180 days
+
+	we can store
+	INTERVAL '6' Month
+
+Spark supports two interval types
+	- YearMonthIntervalType
+		Represents intervals consist of:
+			Years and months
+
+	Ex: 	INTERVAL '1' YEAR
+			INTERVAL '6' MONTH
+			INTERVAL '2-3' YEAR TO MONTH
+
+
+	- DayTimeIntervalType
+
+	Represents intervals consist of:
+		days
+		hours
+		minutes
+		seconds
+		microseconds
+
+	Ex:
+		INTERVAL '5' DAY
+		INTERVAL '10' HOUR
+
+		INTERVAL '3 12' DAY TO HOUR
+		INTERVAL '5 10:20:00' DAY TO SECONDS
+		
+
+	
+
+
